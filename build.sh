@@ -61,8 +61,14 @@ cd "$TMPDOWN"
     KERNEL_DIR="${KERNEL_DIR%.*}"
     [ -d "$KERNEL_DIR" ] || git clone "$deviceinfo_kernel_source" -b $deviceinfo_kernel_source_branch --depth 1 --recursive
 
-    [ -f halium-boot-ramdisk.img ] || curl --location --output halium-boot-ramdisk.img \
-        "https://github.com/Halium/initramfs-tools-halium/releases/download/dynparts/initrd.img-touch-${RAMDISK_ARCH}"
+    if [ ! -f halium-boot-ramdisk.img ]; then
+        if [[ "$deviceinfo_kernel_cmdline" == *"systempart=/dev/mapper"* ]]; then
+            RAMDISK_URL="https://github.com/halium/initramfs-tools-halium/releases/download/dynparts/initrd.img-touch-${RAMDISK_ARCH}"
+        else
+            RAMDISK_URL="https://github.com/halium/initramfs-tools-halium/releases/download/continuous/initrd.img-touch-${RAMDISK_ARCH}"
+        fi
+        curl --location --output halium-boot-ramdisk.img "$RAMDISK_URL"
+    fi
 
     if ([ -n "$deviceinfo_kernel_apply_overlay" ] && $deviceinfo_kernel_apply_overlay) || [ -n "$deviceinfo_dtbo" ]; then
         [ -d libufdt ] || git clone https://android.googlesource.com/platform/system/libufdt -b pie-gsi --depth 1
