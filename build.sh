@@ -24,6 +24,8 @@ if [ -z "$BUILD_DIR" ]; then
     TMPDOWN=$(mktemp -d)
 else
     TMP="$BUILD_DIR/tmp"
+    # Clean up installation dir in case of local builds
+    rm -rf "$TMP"
     mkdir -p "$TMP"
     TMPDOWN="$BUILD_DIR/downloads"
     mkdir -p "$TMPDOWN"
@@ -35,8 +37,7 @@ if [ ! -d "$SCRIPT" ]; then
     SCRIPT="$(dirname "$SCRIPT")"
 fi
 
-mkdir -p "${TMP}/system"
-mkdir -p "${TMP}/partitions"
+mkdir -p "${TMP}/system" "${TMP}/partitions"
 
 source "${HERE}/deviceinfo"
 
@@ -115,6 +116,8 @@ fi
 
 cp -av overlay/* "${TMP}/"
 "$SCRIPT/build-tarball-mainline.sh" "${deviceinfo_codename}" "${OUT}" "${TMP}"
+# create device tarball for https://wiki.debian.org/UsrMerge rootfs
+"$SCRIPT/build-tarball-mainline.sh" "${deviceinfo_codename}" "${OUT}" "${TMP}" "true"
 
 if [ -z "$BUILD_DIR" ]; then
     rm -r "${TMP}"
@@ -122,4 +125,3 @@ if [ -z "$BUILD_DIR" ]; then
 fi
 
 echo "done"
-
