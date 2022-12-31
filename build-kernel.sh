@@ -53,5 +53,5 @@ fi
 if [ -n "$deviceinfo_use_overlaystore" ]; then
     # Config this directory in the overlay store to override (i.e. bind-mount)
     # the whole directory. Rootfs won't ship any device-specific kernel module.
-    touch "${INSTALL_MOD_PATH}/lib/modules/.halium-override-dir"
+    touch "${INSTALL_MOD_PATH}/usr/lib/modules/.halium-override-dir"
 fi
