@@ -12,6 +12,7 @@ OUT="${TMPDOWN}/KERNEL_OBJ"
 
 mkdir -p "$OUT"
 
+
 case "$deviceinfo_arch" in
     aarch64*) ARCH="arm64" ;;
     arm*) ARCH="arm" ;;
@@ -33,6 +34,23 @@ if [ -n "$LD" ]; then
 fi
 
 cd "$KERNEL_DIR"
+
+PLACEHLDR=qcom 
+HEADER="$deviceinfo_bootimg_header_version"   
+if (( $HEADER <= 1)) ;then
+  PLACEHLDR=$deviceinfo_manufacturer
+fi
+
+if [ "$deviceinfo_dtb_require_preprocessing" == true ] 
+then 
+ apt install device-tree-compiler -y
+ export DTC_EXT=dtc
+ cpp -nostdinc -I include -I arch  -undef -x assembler-with-cpp  $KERNEL_DIR/arch/arm64/boot/dts/$PLACEHLDR/${deviceinfo_dts}.dts ${deviceinfo_dts}.dts.preprocessed
+ dtc -I dts -O dtb -p 0x1000 ${deviceinfo_dts}.dts.preprocessed -o ${deviceinfo_dts}.dtb
+ cpp -nostdinc -I include -I arch  -undef -x assembler-with-cpp  $KERNEL_DIR/arch/arm64/boot/dts/$PLACEHLDR/${deviceinfo_dts_overlay}.dts ${deviceinfo_dts_overlay}.dts.preprocessed
+ dtc -I dts -O dtb -p 0x1000 ${deviceinfo_dts_overlay}.dts.preprocessed -o ${deviceinfo_dts_overlay}.dtb
+fi
+
 make O="$OUT" $MAKEOPTS $deviceinfo_kernel_defconfig
 make O="$OUT" $MAKEOPTS -j$(nproc --all)
 if [ "$deviceinfo_kernel_disable_modules" != "true" ]
@@ -42,11 +60,11 @@ fi
 ls "$OUT/arch/$ARCH/boot/"*Image*
 
 if [ -n "$deviceinfo_kernel_apply_overlay" ] && $deviceinfo_kernel_apply_overlay; then
-    ${TMPDOWN}/ufdt_apply_overlay "$OUT/arch/arm64/boot/dts/qcom/${deviceinfo_kernel_appended_dtb}.dtb" \
-        "$OUT/arch/arm64/boot/dts/qcom/${deviceinfo_kernel_dtb_overlay}.dtbo" \
-        "$OUT/arch/arm64/boot/dts/qcom/${deviceinfo_kernel_dtb_overlay}-merged.dtb"
+    ${TMPDOWN}/ufdt_apply_overlay "$OUT/arch/arm64/boot/dts/$PLACEHLDR/${deviceinfo_kernel_appended_dtb}.dtb" \
+        "$OUT/arch/arm64/boot/dts/$PLACEHLDR/${deviceinfo_kernel_dtb_overlay}.dtbo" \
+        "$OUT/arch/arm64/boot/dts/$PLACEHLDR/${deviceinfo_kernel_dtb_overlay}-merged.dtb"
     cat "$OUT/arch/$ARCH/boot/Image.gz" \
-        "$OUT/arch/arm64/boot/dts/qcom/${deviceinfo_kernel_dtb_overlay}-merged.dtb" > "$OUT/arch/$ARCH/boot/Image.gz-dtb"
+        "$OUT/arch/arm64/boot/dts/$PLACEHLDR/${deviceinfo_kernel_dtb_overlay}-merged.dtb" > "$OUT/arch/$ARCH/boot/Image.gz-dtb"
 fi
 
 if [ -n "$deviceinfo_use_overlaystore" ]; then
