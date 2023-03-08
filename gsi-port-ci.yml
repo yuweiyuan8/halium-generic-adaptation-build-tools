@@ -29,6 +29,7 @@ build:
       https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools.git
       build
     - ./build/build.sh
+  timeout: 3 hours 30 minutes
   artifacts:
     paths:
       - out/*
@@ -46,6 +47,7 @@ flashable:
     - ./build/fetch-and-prepare-latest-ota.sh "16.04/arm64/android9/devel" "$DEVICE" ota
     - mkdir -p out
     - ./build/system-image-from-ota.sh ota/ubuntu_command out
+  timeout: 3 hours 30 minutes
   artifacts:
     paths:
       - out/boot.img
@@ -67,6 +69,7 @@ devel-flashable:
     - mkdir -p out
     - ./build/system-image-from-ota.sh ota/ubuntu_command out
     - mv out/rootfs.img out/ubuntu.img
+  timeout: 3 hours 30 minutes
   artifacts:
     paths:
       - out/boot.img
