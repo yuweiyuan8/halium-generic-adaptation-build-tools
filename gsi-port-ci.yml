@@ -21,7 +21,7 @@ build:
     - apt update
     - >-
       apt install -y --no-install-recommends
-      android-tools-mkbootimg bc bison build-essential ca-certificates cpio curl
+      android-tools-mkbootimg bc bison build-essential ca-certificates cpio curl libelf-dev
       fakeroot flex git kmod libssl-dev libtinfo5 lz4 python2 sudo unzip wget xz-utils
     - wget https://raw.githubusercontent.com/LineageOS/android_system_tools_mkbootimg/lineage-19.1/mkbootimg.py -O /usr/bin/mkbootimg
     - >-
