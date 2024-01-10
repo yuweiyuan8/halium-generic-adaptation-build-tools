@@ -114,12 +114,18 @@ cd "$OUTPUT/rootfs"
 print_header "Extracting rootfs..."
 XZ_OPT="-T0" tar xpzf "../$file" --numeric-owner -C system
 
-# Enable SSH and USB tethering for debugging in devel-flashable builds
+# Enable SSH and USB tethering, and disable secure ADBD, for debugging in devel-flashable builds
 echo "start on startup" > system/etc/init/ssh.override
 echo "exec /usr/sbin/sshd -D -o PasswordAuthentication=yes -o PermitEmptyPasswords=yes" >> system/etc/init/ssh.override
 
 echo "start on startup" > system/etc/init/usb-tethering.conf
 echo "exec /bin/bash /usr/bin/usb-tethering" >> system/etc/init/usb-tethering.conf
+
+cat >system/etc/default/adbd <<EOF
+# This file is overwritten by prepare-fake-ota.sh to disable ADBD's host key
+# verification ("secure ADBD") by default, to aid in debugging.
+ADBD_SECURE=0
+EOF
 
 print_header "Repacking rootfs..."
 XZ_OPT="-1 -T0" tar cJf "../rootfs.tar.xz" system
