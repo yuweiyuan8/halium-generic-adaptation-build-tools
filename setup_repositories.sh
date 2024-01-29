@@ -37,6 +37,17 @@ fetch_tarball_if_not_existing() {
     fi
 }
 
+drop_python_wrapper() {
+    local wrapper_path="$1"
+    local real_bin="real-${wrapper_path##*/}"
+    if [ ! -f "${wrapper_path%/*}/$real_bin" ]; then
+        real_bin="${wrapper_path##*/}.real"
+    fi
+    if grep -q "python$" "$wrapper_path"; then
+        ln -sf "$real_bin" "$wrapper_path"
+    fi
+}
+
 setup_gcc() {
     print_header "Setting up GCC repositories"
 
@@ -48,12 +59,18 @@ setup_gcc() {
         clone_if_not_existing "https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9" "pie-gsi"
         # shellcheck disable=SC2034
         GCC_PATH="$TMPDOWN/aarch64-linux-android-4.9"
+        drop_python_wrapper "$GCC_PATH/bin/aarch64-linux-android-gcc"
     fi
 
     if [ "$deviceinfo_arch" = "aarch64" ] || [ "$deviceinfo_arch" = "arm" ]; then
         clone_if_not_existing "https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9" "pie-gsi"
         # shellcheck disable=SC2034
         GCC_ARM32_PATH="$TMPDOWN/arm-linux-androideabi-4.9"
+        drop_python_wrapper "$GCC_ARM32_PATH/bin/arm-linux-androideabi-gcc"
+        if grep -q "python$" "$GCC_ARM32_PATH/arm-linux-androideabi/bin/as"; then
+            # bring -mcpu=cortex-a{7,5}5 compat wrapper to the modern age
+            sed -i.bak "1 s:.*:#!/usr/bin/env python3:" "$GCC_ARM32_PATH/arm-linux-androideabi/bin/as"
+        fi
     fi
 }
 
@@ -100,6 +117,7 @@ setup_clang() {
     # shellcheck disable=SC2034
     CLANG_PATH="$TMPDOWN/linux-x86/clang-$CLANG_REVISION"
     rm -rf "$TMPDOWN/linux-x86/.git" "$TMPDOWN/linux-x86/"!(clang-$CLANG_REVISION)
+    drop_python_wrapper "$CLANG_PATH/bin/clang"
 
     if [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
         export LLVM=1 LLVM_IAS=1
