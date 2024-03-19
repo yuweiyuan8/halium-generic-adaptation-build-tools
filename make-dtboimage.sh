@@ -23,4 +23,4 @@ else
     exit 1
 fi
 
-python2 "$TMPDOWN/libufdt/utils/src/mkdtboimg.py" create "$OUT" $DTBO_LIST
+"$TMPDOWN/libufdt/utils/src/mkdtboimg.py" create "$OUT" $DTBO_LIST
