@@ -139,14 +139,13 @@ while IFS= read -r path ; do
 done <<< "$BUILDPROP_PATHS"
 
 if [ -z "$deviceinfo_use_overlaystore" ]; then
-    "$SCRIPT/build-tarball-mainline.sh" "${deviceinfo_codename}" "${OUT}" "${TMP}"
     # create device tarball for https://wiki.debian.org/UsrMerge rootfs
     "$SCRIPT/build-tarball-mainline.sh" "${deviceinfo_codename}" "${OUT}" "${TMP}" "usrmerge"
 else
     "$SCRIPT/build-tarball-mainline.sh" "${deviceinfo_codename}" "${OUT}" "${TMP}" "overlaystore"
-    # create a symlink for _usrmerge variant so that common pipeline just works.
-    ln -sf "device_${deviceinfo_codename}.tar.xz" "${OUT}/device_${deviceinfo_codename}_usrmerge.tar.xz"
 fi
+# compatibility symlink for  _usrmerge variant so that old pipelines just work
+ln -sf "device_${deviceinfo_codename}.tar.xz" "${OUT}/device_${deviceinfo_codename}_usrmerge.tar.xz"
 
 # Upload Module.symvers to artifacts for GKI debugging
 [ -f "${TMPDOWN}/KERNEL_OBJ/Module.symvers" ] && cp "${TMPDOWN}/KERNEL_OBJ/Module.symvers" "${OUT}"

@@ -31,7 +31,6 @@ elif [ "$mode" = "overlaystore" ]; then
 fi
 
 output_name=device_"$device"
-[ "$mode" = "usrmerge" ] && output_name=device_"$device"_usrmerge
 
 tar -cJf "$output/$output_name.tar.xz" -C "$dir" \
     --owner=root --group=root \
