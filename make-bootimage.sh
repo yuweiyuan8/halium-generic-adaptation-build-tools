@@ -210,7 +210,12 @@ fi
 if [ "$deviceinfo_bootimg_header_version" -le 2 ]; then
     "$MKBOOTIMG" --kernel "$KERNEL" --ramdisk "$RAMDISK" --cmdline "$deviceinfo_kernel_cmdline" --header_version $deviceinfo_bootimg_header_version -o "$OUT" --os_version $deviceinfo_bootimg_os_version --os_patch_level $deviceinfo_bootimg_os_patch_level $EXTRA_ARGS
 else
-    "$MKBOOTIMG" --kernel "$KERNEL" --ramdisk "$RAMDISK" --header_version $deviceinfo_bootimg_header_version -o "$OUT" --os_version $deviceinfo_bootimg_os_version --os_patch_level $deviceinfo_bootimg_os_patch_level $EXTRA_ARGS
+    if [ -n "$deviceinfo_bootimg_has_init_boot_partition" ] && [ "$deviceinfo_bootimg_has_init_boot_partition" == "true" ]; then
+        "$MKBOOTIMG" --kernel "$KERNEL" --header_version $deviceinfo_bootimg_header_version -o "$OUT" --os_version $deviceinfo_bootimg_os_version --os_patch_level $deviceinfo_bootimg_os_patch_level $EXTRA_ARGS
+        "$MKBOOTIMG" --ramdisk "$RAMDISK" --header_version $deviceinfo_bootimg_header_version -o "$(dirname "$OUT")/init_$(basename "$OUT")"
+    else
+        "$MKBOOTIMG" --kernel "$KERNEL" --ramdisk "$RAMDISK" --header_version $deviceinfo_bootimg_header_version -o "$OUT" --os_version $deviceinfo_bootimg_os_version --os_patch_level $deviceinfo_bootimg_os_patch_level $EXTRA_ARGS
+    fi
 
     if [ -n "$VENDOR_RAMDISK" ]; then
         VENDOR_RAMDISK_ARGS=()
