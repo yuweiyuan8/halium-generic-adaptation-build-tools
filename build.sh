@@ -145,8 +145,8 @@ else
     "$SCRIPT/build-tarball-mainline.sh" "${deviceinfo_codename}" "${OUT}" "${TMP}" "overlaystore"
 fi
 # compatibility symlink for  _usrmerge variant so that old pipelines just work
-ln -sf "device_${deviceinfo_codename}.tar.xz" "${OUT}/device_${deviceinfo_codename}_usrmerge.tar.xz"
-ln -sf "device_${deviceinfo_codename}.tar.build" "${OUT}/device_${deviceinfo_codename}_usrmerge.tar.build"
+ln -f "${OUT}/device_${deviceinfo_codename}.tar.xz" "${OUT}/device_${deviceinfo_codename}_usrmerge.tar.xz"
+ln -f "${OUT}/device_${deviceinfo_codename}.tar.build" "${OUT}/device_${deviceinfo_codename}_usrmerge.tar.build"
 
 # Upload Module.symvers to artifacts for GKI debugging
 [ -f "${TMPDOWN}/KERNEL_OBJ/Module.symvers" ] && cp "${TMPDOWN}/KERNEL_OBJ/Module.symvers" "${OUT}"
