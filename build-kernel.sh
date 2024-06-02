@@ -40,6 +40,9 @@ MAKEOPTS=""
 if [ -n "$CC" ]; then
     MAKEOPTS="CC=$CC"
 fi
+if [ -n "$HOSTCC" ]; then
+    MAKEOPTS+=" HOSTCC=$HOSTCC"
+fi
 if [ -n "$LD" ]; then
     MAKEOPTS+=" LD=$LD"
 fi
