@@ -102,8 +102,23 @@ if [ -z "$deviceinfo_skip_dtbo_partition" ] || ! $deviceinfo_skip_dtbo_partition
     fi
 fi
 
-"$SCRIPT/make-bootimage.sh" "${TMPDOWN}" "${TMPDOWN}/KERNEL_OBJ" "${TMPDOWN}/halium-boot-ramdisk.img" \
-    "${TMP}/partitions/boot.img" "${TMP}/system"
+if [ -n "$deviceinfo_bootimg_has_init_boot_partition" ] && $deviceinfo_bootimg_has_init_boot_partition; then
+    "$SCRIPT/make-initbootimage.sh" "${TMPDOWN}" "${TMPDOWN}/KERNEL_OBJ" "${TMPDOWN}/halium-boot-ramdisk.img" \
+        "${TMP}/partitions/boot.img" "${TMP}/system"
+else
+    "$SCRIPT/make-bootimage.sh" "${TMPDOWN}" "${TMPDOWN}/KERNEL_OBJ" "${TMPDOWN}/halium-boot-ramdisk.img" \
+        "${TMP}/partitions/boot.img" "${TMP}/system"
+fi
+
+if [ -n "$deviceinfo_has_recovery_partition" ] && $deviceinfo_has_recovery_partition; then
+    "$SCRIPT/make-recoveryimage.sh" "${TMPDOWN}" "${TMPDOWN}/KERNEL_OBJ" "${TMPDOWN}/halium-boot-ramdisk.img" \
+        "${TMP}/partitions/boot.img" "${TMP}/system"
+fi
+
+if [ "$deviceinfo_bootimg_header_version" -ge 3 ]; then
+    "$SCRIPT/make-vendorbootimage.sh" "${TMPDOWN}" "${TMPDOWN}/KERNEL_OBJ" \
+        "${TMP}/partitions/boot.img" "${TMP}/system"
+fi
 if [ "$ONLY_KERNEL" = "true" ]; then
     exit 0
 fi
