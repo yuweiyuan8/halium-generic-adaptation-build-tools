@@ -133,7 +133,7 @@ setup_tooling() {
 
     if ([ -n "$deviceinfo_kernel_apply_overlay" ] && $deviceinfo_kernel_apply_overlay) || [ -n "$deviceinfo_dtbo" ] || ([ -n "$deviceinfo_dtb_has_dt_table" ] && $deviceinfo_dtb_has_dt_table); then
         clone_if_not_existing "https://android.googlesource.com/platform/external/dtc" "pie-gsi"
-        clone_if_not_existing "https://android.googlesource.com/platform/system/libufdt" "pie-gsi"
+        clone_if_not_existing "https://android.googlesource.com/platform/system/libufdt" "android13-gsi"
     fi
 
     clone_if_not_existing "https://android.googlesource.com/platform/external/avb" "android13-gsi"
