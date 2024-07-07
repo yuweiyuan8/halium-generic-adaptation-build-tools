@@ -60,7 +60,7 @@ if [ -n "$deviceinfo_kernel_apply_overlay" ] && $deviceinfo_kernel_apply_overlay
 fi
 
 if $deviceinfo_kernel_clang_compile; then
-    if [ -z $AARCH64_HOST ] && [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
+    if [ -z "$AARCH64_HOST" ] && [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
         # Restrict available binaries in PATH to make builds less susceptible to host differences
         ALLOWED_HOST_TOOLS="bash git perl sh sync tar"
 
@@ -85,7 +85,7 @@ if $deviceinfo_kernel_clang_compile; then
 
         PATH="$CLANG_PATH/bin:${BUILD_TOOLS_BIN}:${BUILD_TOOLS_PATH}:${KERNEL_BUILD_TOOLS_BIN}:${HOST_TOOLS}" \
             "$SCRIPT/build-kernel.sh" "${TMPDOWN}" "${TMP}/system" "${MENUCONFIG}"
-    elif [ -n $AARCH64_HOST ]; then
+    elif [ -n "$AARCH64_HOST" ]; then
         CC=clang "$SCRIPT/build-kernel.sh" "${TMPDOWN}" "${TMP}/system" "${MENUCONFIG}"
     else
         CC=clang \
@@ -93,7 +93,7 @@ if $deviceinfo_kernel_clang_compile; then
             "$SCRIPT/build-kernel.sh" "${TMPDOWN}" "${TMP}/system" "${MENUCONFIG}"
     fi
 else
-    if [ -n $AARCH64_HOST ]; then
+    if [ -n "$AARCH64_HOST" ]; then
         "$SCRIPT/build-kernel.sh" "${TMPDOWN}" "${TMP}/system" "${MENUCONFIG}"
     else
         PATH="$GCC_PATH/bin:$GCC_ARM32_PATH/bin:${PATH}" \

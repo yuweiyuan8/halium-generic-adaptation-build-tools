@@ -52,7 +52,7 @@ drop_python_wrapper() {
 }
 
 setup_gcc() {
-    if [ -n $AARCH64_HOST ]; then
+    if [ -n "$AARCH64_HOST" ]; then
         print_info "EXPERIMENTAL: Skipping GCC setup on aarch64 host"
         return
     fi
@@ -89,7 +89,7 @@ setup_clang() {
         return
     fi
 
-    if [ -z $AARCH64_HOST ]; then
+    if [ -z "$AARCH64_HOST" ]; then
         print_header "Setting up clang repositories"
 
         local CLANG_BRANCH
@@ -150,7 +150,7 @@ setup_tooling() {
 
     clone_if_not_existing "https://android.googlesource.com/platform/external/avb" "android13-gsi"
 
-    if [ -z $AARCH64_HOST ]; then
+    if [ -z "$AARCH64_HOST" ]; then
         if [ -n "$deviceinfo_kernel_use_dtc_ext" ] && $deviceinfo_kernel_use_dtc_ext; then
             if [ -f "dtc_ext" ]; then
                 print_info "dtc_ext - already exists, skipping download"
@@ -164,7 +164,7 @@ setup_tooling() {
         print_info "EXPERIMENTAL: Skipping dtc_ext setup on aarch64 host"
     fi
 
-    if [ -z $AARCH64_HOST ]; then
+    if [ -z "$AARCH64_HOST" ]; then
         if [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
             case "$deviceinfo_halium_version" in
                 12)
