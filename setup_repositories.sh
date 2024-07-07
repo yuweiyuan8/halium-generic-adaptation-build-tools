@@ -49,6 +49,11 @@ drop_python_wrapper() {
 }
 
 setup_gcc() {
+    if [ $(uname -m) == "aarch64" ]; then
+        print_info "EXPERIMENTAL: Skipping GCC setup on aarch64 host"
+        return
+    fi
+
     print_header "Setting up GCC repositories"
 
     if [ -n "$deviceinfo_kernel_gcc_toolchain_source" ] && [ -n "$deviceinfo_kernel_gcc_toolchain_dir" ]; then
@@ -81,43 +86,47 @@ setup_clang() {
         return
     fi
 
-    print_header "Setting up clang repositories"
+    if [ $(uname -m) != "aarch64" ]; then
+        print_header "Setting up clang repositories"
 
-    local CLANG_BRANCH
-    local CLANG_REVISION
-    # shellcheck disable=SC2154
-    case "$deviceinfo_halium_version" in
-        9)
-            CLANG_BRANCH="pie-gsi"
-            CLANG_REVISION="4691093"
-            ;;
-        10)
-            CLANG_BRANCH="android10-gsi"
-            CLANG_REVISION="r353983c"
-            ;;
-        11)
-            CLANG_BRANCH="android11-gsi"
-            CLANG_REVISION="r383902"
-            ;;
-        12)
-            CLANG_BRANCH="android12L-gsi"
-            CLANG_REVISION="r416183b"
-            ;;
-        13)
-            CLANG_BRANCH="master-kernel-build-2022"
-            CLANG_REVISION="r450784e"
-            ;;
-        *)
-            print_error "Clang is not supported with halium version '$deviceinfo_halium_version'"
-            exit 1
-            ;;
-    esac
+        local CLANG_BRANCH
+        local CLANG_REVISION
+        # shellcheck disable=SC2154
+        case "$deviceinfo_halium_version" in
+            9)
+                CLANG_BRANCH="pie-gsi"
+                CLANG_REVISION="4691093"
+                ;;
+            10)
+                CLANG_BRANCH="android10-gsi"
+                CLANG_REVISION="r353983c"
+                ;;
+            11)
+                CLANG_BRANCH="android11-gsi"
+                CLANG_REVISION="r383902"
+                ;;
+            12)
+                CLANG_BRANCH="android12L-gsi"
+                CLANG_REVISION="r416183b"
+                ;;
+            13)
+                CLANG_BRANCH="master-kernel-build-2022"
+                CLANG_REVISION="r450784e"
+                ;;
+            *)
+                print_error "Clang is not supported with halium version '$deviceinfo_halium_version'"
+                exit 1
+                ;;
+        esac
 
-    clone_if_not_existing "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86" "$CLANG_BRANCH"
-    # shellcheck disable=SC2034
-    CLANG_PATH="$TMPDOWN/linux-x86/clang-$CLANG_REVISION"
-    rm -rf "$TMPDOWN/linux-x86/.git" "$TMPDOWN/linux-x86/"!(clang-$CLANG_REVISION)
-    drop_python_wrapper "$CLANG_PATH/bin/clang"
+        clone_if_not_existing "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86" "$CLANG_BRANCH"
+        # shellcheck disable=SC2034
+        CLANG_PATH="$TMPDOWN/linux-x86/clang-$CLANG_REVISION"
+        rm -rf "$TMPDOWN/linux-x86/.git" "$TMPDOWN/linux-x86/"!(clang-$CLANG_REVISION)
+        drop_python_wrapper "$CLANG_PATH/bin/clang"
+    else
+        print_info "EXPERIMENTAL: Skipping clang setup on aarch64 host"
+    fi
 
     if [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
         export LLVM=1 LLVM_IAS=1
@@ -138,33 +147,41 @@ setup_tooling() {
 
     clone_if_not_existing "https://android.googlesource.com/platform/external/avb" "android13-gsi"
 
-    if [ -n "$deviceinfo_kernel_use_dtc_ext" ] && $deviceinfo_kernel_use_dtc_ext; then
-        if [ -f "dtc_ext" ]; then
-            print_info "dtc_ext - already exists, skipping download"
-        else
-            curl --location https://android.googlesource.com/platform/prebuilts/misc/+/refs/heads/android10-gsi/linux-x86/dtc/dtc?format=TEXT | base64 --decode > dtc_ext
+    if [ $(uname -m) != "aarch64" ]; then
+        if [ -n "$deviceinfo_kernel_use_dtc_ext" ] && $deviceinfo_kernel_use_dtc_ext; then
+            if [ -f "dtc_ext" ]; then
+                print_info "dtc_ext - already exists, skipping download"
+            else
+                curl --location https://android.googlesource.com/platform/prebuilts/misc/+/refs/heads/android10-gsi/linux-x86/dtc/dtc?format=TEXT | base64 --decode > dtc_ext
+            fi
+            chmod +x dtc_ext
+            export DTC_EXT="$TMPDOWN/dtc_ext"
         fi
-        chmod +x dtc_ext
-        export DTC_EXT="$TMPDOWN/dtc_ext"
+    else
+        print_info "EXPERIMENTAL: Skipping dtc_ext setup on aarch64 host"
     fi
 
-    if [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
-        case "$deviceinfo_halium_version" in
-            12)
-                BUILD_TOOLS_BRANCH="master-kernel-build-2021"
-                ;;
-            13)
-                BUILD_TOOLS_BRANCH="master-kernel-build-2022"
-                ;;
-            *)
-                BUILD_TOOLS_BRANCH="main-kernel-build-2023"
-                ;;
-        esac
+    if [ $(uname -m) != "aarch64" ]; then
+        if [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
+            case "$deviceinfo_halium_version" in
+                12)
+                    BUILD_TOOLS_BRANCH="master-kernel-build-2021"
+                    ;;
+                13)
+                    BUILD_TOOLS_BRANCH="master-kernel-build-2022"
+                    ;;
+                *)
+                    BUILD_TOOLS_BRANCH="main-kernel-build-2023"
+                    ;;
+            esac
 
-        if [ -n "$BUILD_TOOLS_BRANCH" ]; then
-            clone_if_not_existing "https://android.googlesource.com/platform/prebuilts/build-tools" "$BUILD_TOOLS_BRANCH"
-            clone_if_not_existing "https://android.googlesource.com/kernel/prebuilts/build-tools" "$BUILD_TOOLS_BRANCH" "kernel-build-tools"
+            if [ -n "$BUILD_TOOLS_BRANCH" ]; then
+                clone_if_not_existing "https://android.googlesource.com/platform/prebuilts/build-tools" "$BUILD_TOOLS_BRANCH"
+                clone_if_not_existing "https://android.googlesource.com/kernel/prebuilts/build-tools" "$BUILD_TOOLS_BRANCH" "kernel-build-tools"
+            fi
         fi
+    else
+         print_info "EXPERIMENTAL: Skipping build-tools setup on aarch64 host"
     fi
 
     if [ -n "$deviceinfo_bootimg_append_vbmeta" ] && $deviceinfo_bootimg_append_vbmeta; then
