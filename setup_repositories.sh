@@ -8,6 +8,9 @@ case $deviceinfo_arch in
     "x86") RAMDISK_ARCH="i386";;
 esac
 
+AARCH64_HOST=
+[ "$(uname -m)" == "aarch64" ] && AARCH64_HOST="true"
+
 clone_if_not_existing() {
     local repo_url="$1"
     local repo_branch="$2"
@@ -49,7 +52,7 @@ drop_python_wrapper() {
 }
 
 setup_gcc() {
-    if [ $(uname -m) == "aarch64" ]; then
+    if [ -n $AARCH64_HOST ]; then
         print_info "EXPERIMENTAL: Skipping GCC setup on aarch64 host"
         return
     fi
@@ -86,7 +89,7 @@ setup_clang() {
         return
     fi
 
-    if [ $(uname -m) != "aarch64" ]; then
+    if [ -z $AARCH64_HOST ]; then
         print_header "Setting up clang repositories"
 
         local CLANG_BRANCH
@@ -147,7 +150,7 @@ setup_tooling() {
 
     clone_if_not_existing "https://android.googlesource.com/platform/external/avb" "android13-gsi"
 
-    if [ $(uname -m) != "aarch64" ]; then
+    if [ -z $AARCH64_HOST ]; then
         if [ -n "$deviceinfo_kernel_use_dtc_ext" ] && $deviceinfo_kernel_use_dtc_ext; then
             if [ -f "dtc_ext" ]; then
                 print_info "dtc_ext - already exists, skipping download"
@@ -161,7 +164,7 @@ setup_tooling() {
         print_info "EXPERIMENTAL: Skipping dtc_ext setup on aarch64 host"
     fi
 
-    if [ $(uname -m) != "aarch64" ]; then
+    if [ -z $AARCH64_HOST ]; then
         if [ -n "$deviceinfo_kernel_llvm_compile" ] && $deviceinfo_kernel_llvm_compile; then
             case "$deviceinfo_halium_version" in
                 12)
