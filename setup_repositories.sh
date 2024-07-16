@@ -126,6 +126,11 @@ setup_clang() {
     if [ -n "$deviceinfo_kernel_use_lld" ] && $deviceinfo_kernel_use_lld; then
         export LD=ld.lld
     fi
+
+    # Google's msm-4.14 kernels are compiled with CFI which assumes LLVMgold.so
+    # plug-in to be available in LD_LIBRARY_PATH, so add it there.
+    # https://android-developers.googleblog.com/2018/10/control-flow-integrity-in-android-kernel.html
+    export LD_LIBRARY_PATH="$CLANG_PATH/lib64"
 }
 
 setup_tooling() {
