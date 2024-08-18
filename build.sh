@@ -52,7 +52,7 @@ cd "$TMPDOWN"
     GCC_PATH="$TMPDOWN/aarch64-linux-android-4.9"
     if $deviceinfo_kernel_clang_compile; then
         [ -d linux-x86 ] || git clone https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 -b android13-gsi --depth 1
-        CLANG_PATH="$TMPDOWN/linux-x86/clang-r383902"
+        CLANG_PATH="$TMPDOWN/linux-x86/clang-r450784d"
         rm -rf "$TMPDOWN/linux-x86/.git" "$TMPDOWN/linux-x86/"!(clang-r450784d)
     fi
     if [ "$deviceinfo_arch" == "aarch64" ]; then
