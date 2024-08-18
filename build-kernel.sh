@@ -26,7 +26,7 @@ if [ "$ARCH" == "arm64" ]; then
 fi
 MAKEOPTS=""
 if [ -n "$CC" ]; then
-    MAKEOPTS="CC=$CC"
+    MAKEOPTS="CC=$CC LLVM=1 LLVM_IAS=1"
 fi
 if [ -n "$LD" ]; then
     MAKEOPTS+=" LD=$LD"
